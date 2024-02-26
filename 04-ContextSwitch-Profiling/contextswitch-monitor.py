@@ -5,69 +5,91 @@
 ## time (the output should appear when Ctrl+C is pressed after running your program).
 
 from bcc import BPF
-from bcc.utils import printb
-from time import sleep
+import collections
+
+import sys
 
 bpf_text = """
 #include <uapi/linux/ptrace.h>
 #include <linux/sched.h>
 
+struct sched_event_data_t{
+    u64 delta;
+    int active_cpu;
+};
 
-BPF_ARRAY(stats_min, u64, 1);
-BPF_ARRAY(stats_max, u64, 1);
-BPF_ARRAY(stats_mean, u64, 1);
+BPF_PERCPU_ARRAY(stats_entryts, u64, 1);
+BPF_PERF_OUTPUT(events);
 
-BPF_ARRAY(stats_entryts, u64, 1);
-BPF_ARRAY(stats_exitts, u64, 1);
-
-
-int schedule_entry (struct pt_regs *ctx) {
+int kprobe__schedule(struct pt_regs *ctx) {
     u64 init_z = 0;
     uint32_t zero = 0;
+
     u64 *ts = stats_entryts.lookup_or_init(&zero, &init_z);
-    *ts = bpf_ktime_get_ns();
-    bpf_trace_printk("schedule_entry++");
+    * ts = bpf_ktime_get_ns();
     return 0;
 }
 
-int schedule_ret (struct pt_regs *ctx) {
+int kretprobe__schedule(struct pt_regs *ctx) {
     u64 init_z = 0;
     uint32_t zero = 0;
-    u64 delta = 0;
-    u64 *min = stats_min.lookup_or_init(&zero, &init_z);
-    u64 *max = stats_max.lookup_or_init(&zero, &init_z);
-    u64 *mean = stats_mean.lookup_or_init(&zero, &init_z);
-    u64 *entry_ts = stats_entryts.lookup_or_init(&zero, &init_z);
-    u64 *exit_ts = stats_exitts.lookup_or_init(&zero, &init_z);
+    struct sched_event_data_t evt_data;
 
-    bpf_trace_printk("schedule_ret--");
-    *entry_ts = bpf_ktime_get_ns();
+    u64 exit_ts = bpf_ktime_get_ns();
+    u64 *start_ts = stats_entryts.lookup(&zero);
+    if (!start_ts)
+        return 0;
+
+    /* Compose the event data payload and submit*/
+    evt_data.active_cpu = bpf_get_smp_processor_id();
+    evt_data.delta = exit_ts - *start_ts;
+    events.perf_submit(ctx, &evt_data, sizeof(evt_data));
+
+    * start_ts = 0;
     
-    if (*entry_ts > 0)
-        delta = (*entry_ts) - (*exit_ts);
-    
-    *entry_ts = *exit_ts = 0;
-    if (*min == 0 )
-        *min = *max = delta;
-    else {
-        if (*min > delta)
-            *min = delta;
-        if (*max < delta)
-            *max = delta;
-    }
     return 0;
 }
 """
 
-if __name__ == '__main__':
+sched_ctxswtch_dequeue = collections.deque()
+sched_ctxswtch_evtcnt = 0
 
-    b = BPF(text=bpf_text)
-    b.attach_kprobe(event="schedule", fn_name="schedule_entry")
-    b.attach_kretprobe(event="schedule", fn_name="schedule_ret")
-    print("Profiling execve... Hit Ctrl-C to end.")
+
+def print_schedstats():
+    global sched_ctxswtch_min, sched_ctxswtch_max, sched_ctxswtch_avg, sched_ctxswtch_evtcnt
+    print ('\nTest Summary: Context Switch Latency stats:',
+            '\n\t min = ', min(sched_ctxswtch_dequeue), 'ns',
+            '\n\t max = ', max(sched_ctxswtch_dequeue), 'ns',
+            '\n\t avg = ', sum(sched_ctxswtch_dequeue)/len(sched_ctxswtch_dequeue), 'ns',
+            '\n\t event count = ', sched_ctxswtch_evtcnt
+            )
+    
+def process_event(cpu, data, size):
+    global sched_ctxswtch_min, sched_ctxswtch_max, sched_ctxswtch_avg, sched_ctxswtch_evtcnt
+    global b
     try:
-        sleep(99999999)
-    except KeyboardInterrupt:
-        print ("Min: ", b.get_table("stats_min")[0])
-        print ("Max: ", b.get_table("stats_max")[0])
-        print ("Mean: ", b.get_table("stats_mean")[0])
+        event = b["events"].event(data)        
+        if (event.delta > 8589934591):
+            print("TASK: VERY HIGH value cpu %d ctx-switch-lat: %d ns\n\n" % (event.active_cpu,event.delta),)
+        else:
+            sched_ctxswtch_evtcnt += 1
+            sched_ctxswtch_dequeue.append(event.delta)        
+        # print("TASK: cpu %d ctx-switch-lat: %d ns\n\n" % (event.active_cpu,event.delta), end="")
+        # print("")
+
+    except Exception:
+        sys.exit(0)
+
+
+if __name__ == '__main__':
+    b = BPF(text=bpf_text)
+    b["events"].open_perf_buffer(process_event)
+
+    print("Profiling scheduler... Hit Ctrl-C to end.")
+    while 1:
+        try:
+            b.perf_buffer_poll()
+        except KeyboardInterrupt:
+            print_schedstats()
+            exit()
+    
