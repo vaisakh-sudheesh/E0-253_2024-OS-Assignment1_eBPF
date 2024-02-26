@@ -9,13 +9,13 @@ Develop a bpftrace script to show the number of files currently opened (it shoul
 ## Solution
 
 Command invocation invocation
-```bash
-sudo ./FD-counter-pid.bt <pid>
+```shellscript
+$ sudo ./FD-counter-pid.bt <pid>
 ```
 
 Example invocation:
-```bash
-vaisakh@VPS-TW:[02-FD-Counter]> sudo ./FD-counter-pid.bt 472451
+```shellscript
+$ sudo ./FD-counter-pid.bt 472451
 Attaching 1 probe...
 
 
@@ -30,6 +30,6 @@ Attaching 1 probe...
 
 A test code to iterate through the ```/proc/<pid>``` entries is added to count file descriptor in ```fdinfo``` and invoke bpftrace script too and validate input
 
-```bash
-vaisakh@VPS-TW:[02-FD-Counter]> sudo python3 testcode.py
+```shellscript
+$ sudo python3 testcode.py
 ```
