@@ -46,15 +46,18 @@ Randomly the time delta calculation which are using bpf_ktime_get_ns() seems to 
 ```
 sudo /bin/python contextswitch-monitor.py
 Profiling scheduler... Hit Ctrl-C to end.
-TASK/BUG: VERY HIGH value cpu 12 ctx-switch-lat: 225189506785942 ns
+TASK/BUG: VERY HIGH value cpu 2 ctx-switch-lat: 225376064640449 ns
 
 
+TASK/BUG: VERY HIGH value cpu 10 ctx-switch-lat: 225376066279896 ns
+
+KeyboardInterrupt: 
 ^C
 Test Summary: Context Switch Latency stats: 
-         min =  610 ns 
-         max =  708872442 ns 
-         avg =  10778007.328517588 ns 
-         event count =  9552
+         min =  600 ns 
+         max =  545235653 ns 
+         avg =  7500022.037298493 ns 
+         event count =  9491
 ```
 
 ## Test code
