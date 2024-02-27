@@ -1,9 +1,3 @@
-## 4. Write a BCC program to measure the average time taken by processes in the system (context switch time =
-## difference between the time when the second process starts and the first process stops).
-##
-## Expected Deliverable: A single file with your code that outputs min, max and mean of the context switch
-## time (the output should appear when Ctrl+C is pressed after running your program).
-
 from bcc import BPF
 import collections
 
@@ -81,9 +75,9 @@ def process_event(cpu, data, size):
         # ignoring them for now
         # Ref [1]: https://github.com/iovisor/bcc/pull/4074
         # Ref [2]: https://github.com/iovisor/bcc/issues/728
-        if (event.delta > 8589934591):
-            print("TASK: VERY HIGH value cpu %d ctx-switch-lat: %d ns\n\n" % (event.active_cpu,event.delta),)
-        else:
+        if (event.delta > 200000000000000):
+            print("TASK/BUG: VERY HIGH value cpu %d ctx-switch-lat: %d ns\n\n" % (event.active_cpu,event.delta),)
+        else:            
             sched_ctxswtch_evtcnt += 1
             sched_ctxswtch_dequeue.append(event.delta)
     except Exception:
@@ -100,6 +94,6 @@ if __name__ == '__main__':
             b.perf_buffer_poll()
         except KeyboardInterrupt:
             skip_processing = True
-            break
-    print_schedstats()
+            print_schedstats()
+            exit()
     
