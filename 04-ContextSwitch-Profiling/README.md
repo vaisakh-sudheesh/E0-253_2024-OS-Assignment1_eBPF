@@ -60,6 +60,14 @@ Test Summary: Context Switch Latency stats:
          event count =  9491
 ```
 
+#### References
+Some references to this sssue:
+
+[1] https://github.com/iovisor/bcc/pull/4074
+
+[2] https://github.com/iovisor/bcc/issues/728
+
+
 ## Test code
 
 TODO
