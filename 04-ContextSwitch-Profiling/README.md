@@ -37,6 +37,44 @@ Traceback (most recent call last):
    File "/usr/lib/python3/dist-packages/bcc/table.py", line 980, in raw_cb_
      def raw_cb_(_, data, size):
 ```
+
+```
+sudo /bin/python /home/vaisakh/developer/OS/ebpf/assignment/E0-253_2024-OS-Assignment1_eBPF/04-ContextSwitch-Profiling/contextswitch-monitor.py
+Profiling scheduler... Hit Ctrl-C to end.
+TASK/BUG: VERY HIGH value cpu 14 ctx-switch-lat: 225303036736645 ns
+
+
+^CException ignored on calling ctypes callback function: <function PerfEventArray._open_perf_buffer.<locals>.raw_cb_ at 0x7f5b7deead40>
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/bcc/table.py", line 980, in raw_cb_
+    def raw_cb_(_, data, size):
+
+KeyboardInterrupt: 
+^CException ignored on calling ctypes callback function: <function PerfEventArray._open_perf_buffer.<locals>.raw_cb_ at 0x7f5b7deeaca0>
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/bcc/table.py", line 980, in raw_cb_
+    def raw_cb_(_, data, size):
+
+KeyboardInterrupt: 
+^CException ignored on calling ctypes callback function: <function PerfEventArray._open_perf_buffer.<locals>.raw_cb_ at 0x7f5b7deeb2e0>
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/bcc/table.py", line 980, in raw_cb_
+    def raw_cb_(_, data, size):
+
+KeyboardInterrupt: 
+^CException ignored on calling ctypes callback function: <function PerfEventArray._open_perf_buffer.<locals>.raw_cb_ at 0x7f5b7deeaac0>
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/bcc/table.py", line 980, in raw_cb_
+    def raw_cb_(_, data, size):
+
+KeyboardInterrupt: 
+^C
+Test Summary: Context Switch Latency stats: 
+         min =  590 ns 
+         max =  579686576 ns 
+         avg =  3553156.302830308 ns 
+         event count =  31516
+```
 This seem to be due to https://github.com/iovisor/bcc/issues/3049, but program functionality is not affected.
 
 ### Abnormal timestamp values returned from bpf_ktime_get_ns
