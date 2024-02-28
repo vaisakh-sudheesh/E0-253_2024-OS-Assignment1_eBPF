@@ -50,8 +50,6 @@ void create_file_and_touch_memory(int minutes, int hours) {
     if (anonymous_memory == MAP_FAILED) {
         perror("Error mapping anonymous memory");
         exit(EXIT_FAILURE);
-    } else {
-        printf ("Allocating first run memory %lu \n", size);
     }
 
     // Touch all pages in anonymous memory
@@ -62,7 +60,6 @@ void create_file_and_touch_memory(int minutes, int hours) {
     printf("The tracing script should output following value when run parallelly:\n");
 
     // Periodically print memory usage until Ctrl+C is pressed
-    printf ("Allocating conseucitive run memory alloc size = %lu \n", size2);
     while (!stop_signal) {
         print_anon_mem_usage();
         sleep(5);

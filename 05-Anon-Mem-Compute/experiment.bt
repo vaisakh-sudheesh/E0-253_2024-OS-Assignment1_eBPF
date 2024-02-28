@@ -1,9 +1,9 @@
 BEGIN {
-    printf ("Tracing anonymous allocations calls for %s - Hit Ctrl-C to end \n", str($1));
+    printf ("Tracing anonymous allocations calls for '%s' - Hit Ctrl-C to end \n", str($1));
     @page_alloc_count = (uint64)0;
 }
 
-kfunc:vmlinux:do_anonymous_page /comm == "testcase.out" / {
+kfunc:vmlinux:do_anonymous_page /comm == str($1) / {
     @page_alloc_count += 1;
 }
 
