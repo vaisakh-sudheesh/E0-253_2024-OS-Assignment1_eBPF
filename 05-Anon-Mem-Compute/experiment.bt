@@ -1,0 +1,14 @@
+BEGIN {
+    printf ("Tracing anonymous allocations calls for %s - Hit Ctrl-C to end \n", str($1));
+    @page_alloc_count = (uint64)0;
+}
+
+kfunc:vmlinux:do_anonymous_page /comm == "testcase.out" / {
+    @page_alloc_count += 1;
+}
+
+interval:s:5 
+{ 
+    @count = ((uint64)@page_alloc_count) * 4 + 52;
+    printf("ANON MEM: page_alloc_count: %lu (%lu kB)\n",  @page_alloc_count, @count); 
+}
