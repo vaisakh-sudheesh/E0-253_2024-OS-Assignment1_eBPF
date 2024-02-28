@@ -56,10 +56,14 @@ skip_processing = False
 
 def print_schedstats():
     global sched_ctxswtch_min, sched_ctxswtch_max, sched_ctxswtch_avg, sched_ctxswtch_evtcnt
+    min_val =  min(sched_ctxswtch_dequeue)
+    max_val = max(sched_ctxswtch_dequeue)
+    avg_val = sum(sched_ctxswtch_dequeue)/len(sched_ctxswtch_dequeue)
+
     print ('\nTest Summary: Context Switch Latency stats:',
-            '\n\t min = ', min(sched_ctxswtch_dequeue), 'ns',
-            '\n\t max = ', max(sched_ctxswtch_dequeue), 'ns',
-            '\n\t avg = ', sum(sched_ctxswtch_dequeue)/len(sched_ctxswtch_dequeue), 'ns',
+            '\n\t min = ',min_val, 'ns (', (min_val/1000000),' ms)',
+            '\n\t max = ',max_val , 'ns (', (max_val/1000000),' ms)'
+            '\n\t avg = ', avg_val, 'ns (', (avg_val/1000000),'ms )'
             '\n\t event count = ', sched_ctxswtch_evtcnt
             )
     

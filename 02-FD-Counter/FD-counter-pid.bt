@@ -1,6 +1,5 @@
 #!/bin/env bpftrace
 
 iter:task_file /ctx->task->pid == $1/   {
-     //printf("%s:%d %d:%s\n", ctx->task->comm, ctx->task->pid, ctx->fd, path(ctx->file->f_path)); 
      @fdcount = count();
 }
