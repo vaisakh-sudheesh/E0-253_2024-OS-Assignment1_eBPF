@@ -6,7 +6,36 @@ Write a BCC program to measure the average time taken by processes in the system
 **Expected Deliverable**: A single file with your code that outputs min, max and mean of the context switch
 time (the output should appear when Ctrl+C is pressed after running your program).
 
-## Solution
+
+## Solution Approach
+Most of the scheduler functionality in kernel resides in **kernel/sched/core.c**.
+
+Though the core function for scheduling in **__schedule**, it is marked as notrace, there by preventing tracing via external frameworks.
+
+```c
+static void __sched notrace __schedule(unsigned int sched_mode)
+```
+
+Instead for tracking scheduler activities **schedule** is chosen as monitoring point.
+```c
+asmlinkage __visible void __sched schedule(void)
+{
+	struct task_struct *tsk = current;
+
+	sched_submit_work(tsk);
+	do {
+		preempt_disable();
+		__schedule(SM_NONE);
+		sched_preempt_enable_no_resched();
+	} while (need_resched());
+	sched_update_worker(tsk);
+}
+EXPORT_SYMBOL(schedule);
+```
+
+Since the goal is to track  average time taken by processes in the system to perform context switch the duration about mentioned routine need to be track. For doing so, **kprobe** and **kretprobe** functionality of eBPF is utilized. per CPU core latency of entry exit is calculated and summarized as stated in the problem.
+
+## Testing Command
 
 Command invocation invocation
 ```shellscript
@@ -25,7 +54,7 @@ Test Summary: Context Switch Latency stats:
          event count =  24551
 ```
 
-## BUG Observations
+## EBPF BUG Observations
 
 ### PerfEventArray exception
 
