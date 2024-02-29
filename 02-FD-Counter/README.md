@@ -36,9 +36,8 @@ Attaching 1 probe...
 @fdcount: 1
 ```
 
-| :warning: WARNING           |
-|:----------------------------|
-| Sometimes, the number of file descriptors can change between manual or automated sampling of ```/proc/<pid>/fdinfo``` path and bpftrace invocation, so there can be mismatch in numbers obtained in few cases.    |
+> [!IMPORTANT]
+> Sometimes, the number of file descriptors can change between manual or automated sampling of ```/proc/<pid>/fdinfo``` path and bpftrace invocation, so there can be mismatch in numbers obtained in few cases.
 
 ## Test code
 
