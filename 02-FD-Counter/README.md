@@ -9,7 +9,7 @@ Develop a bpftrace script to show the number of files currently opened (it shoul
 
 Make use of **iter:task_file** bpf iterator to dump file descriptors associated with PID.
 
-### Refernces:
+### References:
 - https://docs.kernel.org/bpf/bpf_iterators.html
 - https://developers.facebook.com/blog/post/2022/03/31/bpf-iterator-retrieving-kernel-data-with-flexibility-and-efficiency/
 - https://lwn.net/Articles/926041/
